@@ -71,6 +71,9 @@ dependencies {
     // Coroutines / Flow
     implementation libs.kotlinx.coroutines.android
 
-    // Images
-    implementation libs.coil.compose
+    // Navigation + ViewModel
+    implementation libs.androidx.navigation.compose
+    implementation libs.androidx.lifecycle.viewmodel.compose
+    implementation libs.androidx.lifecycle.runtime.compose
+    implementation libs.androidx.hilt.navigation.compose
 }
