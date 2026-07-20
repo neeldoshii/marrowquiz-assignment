@@ -301,14 +301,14 @@ private fun QuizContent(
             ) { (_, current) ->
                 Column {
                     Text(
-                        text = current.question,
+                        text = current.question.orEmpty(),
                         color = QuizOnInk,
                         style = MaterialTheme.typography.headlineMedium,
                     )
 
                     Spacer(modifier = Modifier.height(28.dp))
 
-                    current.options.forEachIndexed { index, option ->
+                    current.options.orEmpty().forEachIndexed { index, option ->
                         val appear = remember(current.id) { Animatable(0f) }
                         LaunchedEffect(current.id) {
                             appear.snapTo(0f)
@@ -325,7 +325,7 @@ private fun QuizContent(
                             background = optionBackground(
                                 index = index,
                                 selected = state.selectedOptionIndex,
-                                correct = current.correctOptionIndex,
+                                correct = current.correctOptionIndex ?: -1,
                                 revealed = state.isAnswerRevealed,
                             ),
                             modifier = Modifier

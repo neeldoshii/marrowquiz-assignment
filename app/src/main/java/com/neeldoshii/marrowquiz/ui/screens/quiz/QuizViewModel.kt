@@ -54,7 +54,8 @@ class QuizViewModel @Inject constructor(
         val state = _uiState.value
         if (state.isLoading || state.isFinished || state.isAnswerRevealed) return
         val question = state.currentQuestion ?: return
-        if (optionIndex !in question.options.indices) return
+        val options = question.options ?: return
+        if (optionIndex !in options.indices) return
 
         val isCorrect = optionIndex == question.correctOptionIndex
         val newStreak = if (isCorrect) state.currentStreak + 1 else 0

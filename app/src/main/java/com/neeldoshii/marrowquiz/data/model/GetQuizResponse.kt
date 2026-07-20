@@ -4,11 +4,11 @@ import com.google.gson.annotations.SerializedName
 
 data class GetQuizResponse(
     @SerializedName("id")
-    val id: Int,
+    val id: Int? = null,
     @SerializedName("question")
-    val question: String,
+    val question: String? = null,
     @SerializedName("options")
-    val options: List<String>,
+    val options: List<String>? = null,
     @SerializedName("correctOptionIndex")
-    val correctOptionIndex: Int,
+    val correctOptionIndex: Int? = null,
 )
