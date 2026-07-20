@@ -33,6 +33,7 @@ fun ResultsScreen(
     correctCount: Int,
     totalQuestions: Int,
     longestStreak: Int,
+    skippedCount: Int,
     onRestart: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -85,6 +86,14 @@ fun ResultsScreen(
                 modifier = Modifier.weight(1f),
             )
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        StatCard(
+            label = "Skipped",
+            value = skippedCount.toString(),
+            modifier = Modifier.fillMaxWidth(),
+        )
 
         Spacer(modifier = Modifier.weight(1f))
 

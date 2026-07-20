@@ -62,6 +62,7 @@ fun AppNavHost(
                 correctCount = quizState.correctCount,
                 totalQuestions = quizState.totalQuestions,
                 longestStreak = quizState.longestStreak,
+                skippedCount = quizState.skippedCount,
                 onRestart = {
                     quizViewModel.restartQuiz()
                     navController.navigate(Route.Quiz.path) {

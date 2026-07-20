@@ -19,6 +19,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,6 +33,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -48,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,8 +58,11 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -72,6 +78,8 @@ import com.neeldoshii.marrowquiz.ui.theme.QuizProgressTrack
 import com.neeldoshii.marrowquiz.ui.theme.QuizSurface
 import com.neeldoshii.marrowquiz.ui.theme.QuizWrong
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @Composable
 fun QuizScreen(
@@ -173,6 +181,14 @@ private fun QuizContent(
     onCelebrationShown: () -> Unit,
 ) {
     val question = state.currentQuestion ?: return
+    val canSwipeSkip = !state.isAnswerRevealed
+    val scope = rememberCoroutineScope()
+    val swipeOffset = remember { Animatable(0f) }
+    val skipThresholdPx = with(LocalDensity.current) { 96.dp.toPx() }
+
+    LaunchedEffect(state.currentIndex) {
+        swipeOffset.snapTo(0f)
+    }
 
     LaunchedEffect(state.showStreakCelebration) {
         if (state.showStreakCelebration) {
@@ -184,7 +200,45 @@ private fun QuizContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 20.dp),
+            .padding(horizontal = 20.dp)
+            .offset { IntOffset(swipeOffset.value.roundToInt(), 0) }
+            .graphicsLayer {
+                val progress =
+                    (kotlin.math.abs(swipeOffset.value) / (skipThresholdPx * 2f)).coerceIn(0f, 1f)
+                alpha = 1f - progress * 0.25f
+            }
+            .pointerInput(canSwipeSkip, state.currentIndex) {
+                if (!canSwipeSkip) return@pointerInput
+                detectHorizontalDragGestures(
+                    onDragEnd = {
+                        scope.launch {
+                            if (kotlin.math.abs(swipeOffset.value) >= skipThresholdPx) {
+                                onSkip()
+                                swipeOffset.snapTo(0f)
+                            } else {
+                                swipeOffset.animateTo(
+                                    0f,
+                                    spring(stiffness = Spring.StiffnessMedium),
+                                )
+                            }
+                        }
+                    },
+                    onDragCancel = {
+                        scope.launch {
+                            swipeOffset.animateTo(
+                                0f,
+                                spring(stiffness = Spring.StiffnessMedium),
+                            )
+                        }
+                    },
+                    onHorizontalDrag = { change, dragAmount ->
+                        change.consume()
+                        val max = skipThresholdPx * 2.2f
+                        val next = (swipeOffset.value + dragAmount).coerceIn(-max, max)
+                        scope.launch { swipeOffset.snapTo(next) }
+                    },
+                )
+            },
     ) {
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -287,12 +341,20 @@ private fun QuizContent(
             }
         }
 
+        Text(
+            text = "Swipe to skip",
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            color = QuizMuted.copy(alpha = if (canSwipeSkip) 0.7f else 0.35f),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+
         TextButton(
             onClick = onSkip,
             enabled = !state.isAnswerRevealed,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
+                .padding(top = 4.dp, bottom = 16.dp),
         ) {
             Text(
                 text = "Skip",
