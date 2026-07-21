@@ -1,6 +1,6 @@
 # Marrow Quiz
 
-Take-home Android app: 10 MCQs from a remote API, streak-based feedback, and a results screen.
+MCQs from a remote API, streak-based feedback, and a results screen.
 
 ## Features
 
@@ -15,7 +15,11 @@ Take-home Android app: 10 MCQs from a remote API, streak-based feedback, and a r
 
 <!-- Replace with your walkthrough link -->
 
-[Watch the demo](VIDEO_URL_HERE)
+
+
+https://github.com/user-attachments/assets/ed617c43-5d23-4f26-89ae-32cc93d537ed
+
+
 
 ## Architecture
 
